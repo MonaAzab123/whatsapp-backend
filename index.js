@@ -1,29 +1,18 @@
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 3000;
+export default function handler(req, res) {
+  const VERIFY_TOKEN = "test123"; // نفس التوكن اللي كتبتيه في Meta
 
-app.use(express.json());
+  if (req.method === 'GET') {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
 
-app.get("/webhook", (req, res) => {
-  const verify_token = "test123"; // ضعي التوكن اللي هتكتبيه في WhatsApp
-
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
-
-  if (mode && token && mode === "subscribe" && token === verify_token) {
-    console.log("WEBHOOK_VERIFIED");
-    res.status(200).send(challenge);
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      console.log("WEBHOOK_VERIFIED");
+      res.status(200).send(challenge);
+    } else {
+      res.status(403).send('Forbidden');
+    }
   } else {
-    res.sendStatus(403);
+    res.status(200).send("OK");
   }
-});
-
-app.post("/webhook", (req, res) => {
-  console.log("Received webhook:", JSON.stringify(req.body, null, 2));
-  res.sendStatus(200);
-});
-
-app.listen(port, () => {
-  console.log(`Webhook is running on port ${port}`);
-});
+}
